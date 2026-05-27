@@ -1,7 +1,7 @@
 {
   "name": "coco-localisation",
   "version": "2.0.0",
-  "description": "J.A.R.V.I.S — Localisation mobile → PC via WebSocket",
+  "description": "coco localisation — Localisation mobile → PC via Web app native",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
