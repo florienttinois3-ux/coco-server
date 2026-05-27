@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>COCO — Mobile</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:        #080c14;
+  --surface:   #0d1320;
+  --surface2:  #111827;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --accent:    #2d7ff9;
+  --accent2:   #00d4ff;
+  --green:     #00e676;
+  --red:       #ff4d6d;
+  --amber:     #ffab00;
+  --text:      rgba(255,255,255,0.88);
+  --text2:     rgba(255,255,255,0.45);
+  --text3:     rgba(255,255,255,0.22);
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'Space Grotesk', sans-serif;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body {
+  width:100%; height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  overflow:hidden;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+/* ─── HTTPS WARNING ──────────────────────────────────────────────── */
+#https-warn {
+  display:none; position:fixed; top:0; left:0; right:0; z-index:999;
+  background:#7f1d2a; color:#fecdd3;
+  padding:10px 16px 10px 14px;
+  font-family:var(--mono); font-size:10px; line-height:1.6;
+  text-align:center;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────────────── */
+#header {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  height:54px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.logo-m {
+  display:flex; align-items:center; gap:9px;
+}
+.logo-dot {
+  width:26px; height:26px; border-radius:7px;
+  background:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.logo-dot svg { width:14px; height:14px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; }
+.logo-name { font-family:var(--mono); font-size:13px; font-weight:500; letter-spacing:0.06em; }
+
+.conn-pill {
+  display:flex; align-items:center; gap:6px;
+  padding:5px 11px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:100px;
+  font-family:var(--mono); font-size:10px; color:var(--text2);
+}
+.cpill-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--red); flex-shrink:0;
+  transition:background 0.3s;
+}
+.cpill-dot.on  { background:var(--green); }
+.cpill-dot.off { animation:blink 0.9s step-start infinite; }
+@keyframes blink { 50%{opacity:0;} }
+
+/* ─── MAIN SCROLL ────────────────────────────────────────────────── */
+#main {
+  position:fixed;
+  top:54px; left:0; right:0;
+  bottom:56px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:16px 16px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+#main::-webkit-scrollbar { display:none; }
+
+/* ─── ORB ────────────────────────────────────────────────────────── */
+#orb-card {
+  position:relative;
+  height:200px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+#orb-cv { width:100%; height:100%; display:block; }
+.orb-fade {
+  position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 40%, var(--surface2) 80%);
+}
+.orb-status {
+  position:absolute; bottom:14px; left:0; right:0; text-align:center;
+  font-family:var(--mono); font-size:9px; letter-spacing:0.16em; color:var(--text3);
+}
+
+/* ─── COORDS CARD ────────────────────────────────────────────────── */
+.coords-card {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.coords-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+}
+.coord-cell {
+  padding:14px 16px;
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.coord-cell:nth-child(2n) { border-right:none; }
+.coord-cell:last-child, .coord-cell:nth-last-child(2) { border-bottom:none; }
+.coord-label { font-family:var(--mono); font-size:9px; letter-spacing:0.1em; color:var(--text3); margin-bottom:4px; }
+.coord-val   { font-family:var(--mono); font-size:14px; font-weight:500; color:var(--text2); transition:color 0.4s; }
+.coord-val.live { color:var(--accent2); }
+
+/* Accuracy cell spans full */
+.coord-cell.full { grid-column:1/-1; border-bottom:none; }
+.acc-row { display:flex; align-items:center; gap:10px; }
+.acc-bar-wrap { flex:1; height:3px; background:var(--border); border-radius:2px; }
+.acc-bar { height:100%; border-radius:2px; background:var(--green); width:0%; transition:width 0.5s, background 0.3s; }
+.coord-val.sm { font-size:12px; }
+
+/* ─── GPS BUTTON ─────────────────────────────────────────────────── */
+#gps-btn {
+  width:100%;
+  padding:16px;
+  background:rgba(45,127,249,0.1);
+  border:1px solid rgba(45,127,249,0.25);
+  border-radius:14px;
+  color:var(--accent);
+  font-family:var(--sans);
+  font-size:15px;
+  font-weight:600;
+  letter-spacing:0.03em;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:all 0.25s;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+}
+#gps-btn:active { transform:scale(0.98); }
+#gps-btn.on {
+  background:rgba(0,230,118,0.1);
+  border-color:rgba(0,230,118,0.3);
+  color:var(--green);
+}
+.btn-indicator {
+  width:8px; height:8px; border-radius:50%;
+  background:currentColor; opacity:0.7; flex-shrink:0;
+}
+#gps-btn.on .btn-indicator { animation:pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1);opacity:0.7;} 50%{transform:scale(1.6);opacity:1;} }
+
+/* ─── SERVER CONFIG ──────────────────────────────────────────────── */
+.cfg-card {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.cfg-toggle {
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  padding:13px 16px;
+  background:none; border:none;
+  font-family:var(--sans); font-size:13px; font-weight:500;
+  color:var(--text2); cursor:pointer;
+  transition:color 0.2s;
+}
+.cfg-toggle:active { color:var(--text); }
+.cfg-chevron { font-size:12px; transition:transform 0.3s; opacity:0.5; }
+.cfg-toggle.open .cfg-chevron { transform:rotate(180deg); }
+.cfg-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+.cfg-body.open { max-height:160px; }
+.cfg-inner { padding:0 16px 14px; display:flex; flex-direction:column; gap:8px; }
+.cfg-row   { display:flex; gap:7px; }
+.inp {
+  flex:1; font-family:var(--mono); font-size:11px; color:var(--text);
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border); border-radius:8px;
+  padding:9px 12px; outline:none;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.inp:focus { border-color:rgba(45,127,249,0.5); box-shadow:0 0 0 3px rgba(45,127,249,0.1); }
+.inp::placeholder { color:var(--text3); }
+.btn-ok {
+  font-family:var(--mono); font-size:11px; font-weight:500;
+  padding:0 14px; background:var(--accent); color:#fff;
+  border:none; border-radius:8px; cursor:pointer; flex-shrink:0;
+  transition:opacity 0.2s;
+}
+.btn-ok:active { opacity:0.8; }
+.cfg-hint { font-family:var(--mono); font-size:10px; color:var(--text3); line-height:1.5; }
+.cfg-hint span { color:var(--accent2); }
+
+/* ─── STATS ROW ──────────────────────────────────────────────────── */
+.stats-row {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:8px; flex-shrink:0;
+}
+.stat-card {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px 14px;
+}
+.stat-label { font-family:var(--mono); font-size:9px; letter-spacing:0.1em; color:var(--text3); margin-bottom:5px; }
+.stat-val   { font-family:var(--mono); font-size:18px; font-weight:500; color:var(--text); }
+.stat-unit  { font-size:11px; color:var(--text2); margin-left:2px; }
+
+/* ─── BOTTOM BAR ─────────────────────────────────────────────────── */
+#footer {
+  position:fixed; bottom:0; left:0; right:0; z-index:100;
+  height:56px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 18px;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+}
+.foot-stat { display:flex; flex-direction:column; align-items:flex-start; gap:1px; }
+.foot-stat.right { align-items:flex-end; }
+.foot-label { font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:0.08em; }
+.foot-val   { font-family:var(--mono); font-size:13px; font-weight:500; color:var(--accent); }
+.foot-val.muted { color:var(--text2); }
+
+/* ─── TOAST ──────────────────────────────────────────────────────── */
+#toast {
+  position:fixed; bottom:68px; left:50%; transform:translateX(-50%);
+  z-index:500;
+  font-family:var(--mono); font-size:10px; letter-spacing:0.07em;
+  padding:9px 18px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  color:var(--text);
+  opacity:0; transition:opacity 0.25s;
+  pointer-events:none; white-space:nowrap;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);
+}
+#toast.show { opacity:1; }
+</style>
+</head>
+<body>
+
+<div id="https-warn">
+  ⚠ Connexion non sécurisée — le GPS peut être bloqué par le navigateur
+  <button onclick="this.parentElement.style.display='none'"
+          style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:inherit;font-size:16px;cursor:pointer;">×</button>
+</div>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo-m">
+    <div class="logo-dot">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+    </div>
+    <span class="logo-name">COCO</span>
+  </div>
+  <div class="conn-pill">
+    <div class="cpill-dot off" id="conn-dot"></div>
+    <span id="conn-lbl">—</span>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+
+  <!-- Orb -->
+  <div id="orb-card">
+    <canvas id="orb-cv"></canvas>
+    <div class="orb-fade"></div>
+    <div class="orb-status" id="orb-lbl">NOYAU EN VEILLE</div>
+  </div>
+
+  <!-- Coordinates -->
+  <div class="coords-card">
+    <div class="coords-grid">
+      <div class="coord-cell">
+        <div class="coord-label">LATITUDE</div>
+        <div class="coord-val" id="c-lat">—</div>
+      </div>
+      <div class="coord-cell">
+        <div class="coord-label">LONGITUDE</div>
+        <div class="coord-val" id="c-lon">—</div>
+      </div>
+      <div class="coord-cell full">
+        <div class="coord-label">PRÉCISION</div>
+        <div class="acc-row">
+          <div class="coord-val sm" id="c-acc">—</div>
+          <div class="acc-bar-wrap"><div class="acc-bar" id="acc-bar"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">ENVOYÉES</div>
+      <div class="stat-val" id="s-sent">0<span class="stat-unit">pos</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">INTERVALLE</div>
+      <div class="stat-val" id="s-rate">—<span class="stat-unit">s</span></div>
+    </div>
+  </div>
+
+  <!-- GPS Button -->
+  <button id="gps-btn" onclick="toggleGPS()">
+    <span class="btn-indicator"></span>
+    <span id="gps-btn-txt">Activer le GPS</span>
+  </button>
+
+  <!-- Server config -->
+  <div class="cfg-card">
+    <button class="cfg-toggle" id="cfg-tog" onclick="toggleCfg()">
+      <span>Adresse serveur</span>
+      <span class="cfg-chevron">▾</span>
+    </button>
+    <div class="cfg-body" id="cfg-body">
+      <div class="cfg-inner">
+        <div class="cfg-row">
+          <input id="srv-in" class="inp" type="url"
+                 placeholder="http://192.168.x.x:8080"
+                 spellcheck="false" autocomplete="off"/>
+          <button class="btn-ok" onclick="saveCfg()">OK</button>
+        </div>
+        <div class="cfg-hint">URL : <span id="cfg-url">—</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="foot-stat">
+    <div class="foot-label">POSITIONS</div>
+    <div class="foot-val" id="f-sent">0</div>
+  </div>
+  <div class="foot-stat right">
+    <div class="foot-label">DERNIER ENVOI</div>
+    <div class="foot-val muted" id="f-time">—</div>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/orb.js"></script>
+<script>
+/* ── HTTPS CHECK ───────────────────────────────────────────────────── */
+if(location.protocol!=="https:"&&location.hostname!=="localhost"&&location.hostname!=="127.0.0.1"){
+  document.getElementById("https-warn").style.display="block";
+}
+
+/* ── ORB ───────────────────────────────────────────────────────────── */
+let orb=null;
+(function(){
+  if(typeof createOrb!=="function") return;
+  const card=document.getElementById("orb-card");
+  const cv=document.getElementById("orb-cv");
+  cv.width=card.clientWidth; cv.height=card.clientHeight;
+  orb=createOrb(cv);
+})();
+function orbState(s,label){
+  if(orb) orb.setState(s);
+  if(label) document.getElementById("orb-lbl").textContent=label;
+}
+
+/* ── CONFIG ────────────────────────────────────────────────────────── */
+let savedAddr="";
+try{ savedAddr=localStorage.getItem("coco_server")||""; }catch{}
+
+function getServerBase(){
+  const field=(document.getElementById("srv-in").value||"").trim().replace(/\/$/,"");
+  return field||savedAddr||(location.protocol+"//"+location.hostname+":8080");
+}
+function getWSUrl(){ return getServerBase().replace(/^http/,"ws")+"?role=phone"; }
+
+function toggleCfg(){
+  const tog=document.getElementById("cfg-tog");
+  const body=document.getElementById("cfg-body");
+  tog.classList.toggle("open");
+  body.classList.toggle("open");
+}
+
+function saveCfg(){
+  const val=document.getElementById("srv-in").value.trim().replace(/\/$/,"");
+  if(!val) return;
+  savedAddr=val;
+  try{ localStorage.setItem("coco_server",val); }catch{}
+  fetch(val+"/api/config",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({serverAddress:val}),
+  })
+  .then(r=>r.json())
+  .then(d=>{ document.getElementById("cfg-url").textContent=d.mobileURL||val+"/mobile"; toast("Adresse sauvegardée"); wsReconnect(); })
+  .catch(()=>toast("Serveur inaccessible — vérifiez l'adresse"));
+}
+if(savedAddr) document.getElementById("srv-in").value=savedAddr;
+
+/* ── WEBSOCKET ─────────────────────────────────────────────────────── */
+let ws, wsTimer, sentCount=0, lastSentTs=0;
+
+function wsConnect(){
+  clearTimeout(wsTimer);
+  const url=getWSUrl();
+  try{ ws=new WebSocket(url); }
+  catch(e){ setConn(false); wsTimer=setTimeout(wsConnect,3000); return; }
+
+  ws.onopen=()=>{ setConn(true); toast("Connecté au PC"); orbState("idle","NOYAU ACTIF"); };
+  ws.onmessage=({data})=>{
+    try{
+      const d=JSON.parse(data);
+      if(d.type==="server_info"&&d.mobileURL) document.getElementById("cfg-url").textContent=d.mobileURL;
+      if(d.type==="config_updated") document.getElementById("cfg-url").textContent=d.mobileURL||"—";
+    }catch{}
+  };
+  ws.onclose=()=>{ setConn(false); orbState("idle","NOYAU EN VEILLE"); wsTimer=setTimeout(wsConnect,2500); };
+}
+function wsReconnect(){ if(ws) try{ws.close();}catch{} clearTimeout(wsTimer); wsConnect(); }
+function wsSend(obj){ if(ws&&ws.readyState===WebSocket.OPEN) ws.send(JSON.stringify(obj)); }
+setInterval(()=>wsSend({type:"ping"}),20000);
+
+/* ── GPS ───────────────────────────────────────────────────────────── */
+let watchId=null, isTracking=false;
+
+function toggleGPS(){ isTracking?stopGPS():startGPS(); }
+
+function startGPS(){
+  if(!navigator.geolocation){ toast("GPS non disponible sur cet appareil"); return; }
+  orbState("thinking","ACQUISITION GPS…");
+  toast("Recherche du signal GPS…");
+  watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,timeout:12000,maximumAge:0});
+  isTracking=true;
+  const btn=document.getElementById("gps-btn");
+  btn.classList.add("on");
+  document.getElementById("gps-btn-txt").textContent="Arrêter le GPS";
+}
+
+function stopGPS(){
+  if(watchId!==null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+  isTracking=false;
+  orbState("idle","NOYAU ACTIF");
+  const btn=document.getElementById("gps-btn");
+  btn.classList.remove("on");
+  document.getElementById("gps-btn-txt").textContent="Activer le GPS";
+  document.getElementById("c-lat").classList.remove("live");
+  document.getElementById("c-lon").classList.remove("live");
+  toast("GPS désactivé");
+}
+
+function onPos(pos){
+  const c=pos.coords;
+  wsSend({type:"gps",lat:c.latitude,lon:c.longitude,accuracy:c.accuracy,
+          altitude:c.altitude,speed:c.speed,heading:c.heading,timestamp:Date.now()});
+  sentCount++;
+
+  document.getElementById("c-lat").textContent=c.latitude.toFixed(6)+"°";
+  document.getElementById("c-lon").textContent=c.longitude.toFixed(6)+"°";
+  document.getElementById("c-lat").classList.add("live");
+  document.getElementById("c-lon").classList.add("live");
+
+  const pct=Math.max(0,100-Math.min(c.accuracy,100));
+  document.getElementById("acc-bar").style.width=pct+"%";
+  document.getElementById("acc-bar").style.background=c.accuracy<15?"var(--green)":c.accuracy<50?"var(--amber)":"var(--red)";
+  document.getElementById("c-acc").textContent=Math.round(c.accuracy)+" m";
+
+  document.getElementById("s-sent").innerHTML=sentCount+'<span class="stat-unit">pos</span>';
+  document.getElementById("f-sent").textContent=sentCount;
+
+  const now=Date.now();
+  if(lastSentTs){
+    const dt=((now-lastSentTs)/1000).toFixed(1);
+    document.getElementById("s-rate").innerHTML=dt+'<span class="stat-unit">s</span>';
+  }
+  document.getElementById("f-time").textContent=new Date(now).toLocaleTimeString("fr-FR");
+  lastSentTs=now;
+
+  orbState("speaking","SIGNAL ENVOYÉ");
+  setTimeout(()=>{ if(isTracking) orbState("listening","ÉCOUTE GPS…"); },1200);
+}
+
+function onErr(err){
+  orbState("thinking","ERREUR GPS");
+  const msgs={1:"Accès GPS refusé — autorisez la géolocalisation",2:"Signal GPS indisponible",3:"Timeout GPS — nouvelle tentative…"};
+  toast(msgs[err.code]||"Erreur GPS");
+}
+
+/* ── UI ────────────────────────────────────────────────────────────── */
+function setConn(ok){
+  document.getElementById("conn-dot").className="cpill-dot "+(ok?"on":"off");
+  document.getElementById("conn-lbl").textContent=ok?"Connecté":"Reconnexion…";
+}
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove("show"),2800);
+}
+
+/* ── INIT ──────────────────────────────────────────────────────────── */
+wsConnect();
+</script>
+</body>
+</html>
