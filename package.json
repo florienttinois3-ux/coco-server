@@ -4,8 +4,8 @@
   "description": "J.A.R.V.I.S — Localisation mobile → PC via WebSocket",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js",
-    "dev":   "node server/server.js"
+    "start": "node server.js",
+    "dev":   "node server.js"
   },
   "dependencies": {
     "ws":     "^8.17.0",
